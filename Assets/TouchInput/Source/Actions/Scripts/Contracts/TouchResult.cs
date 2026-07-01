@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace TouchInput.Source.Actions.Scripts.Contracts
 {
-    public struct TouchFeedback
+    public struct TouchResult
     {
         public bool IsContactValid;
 

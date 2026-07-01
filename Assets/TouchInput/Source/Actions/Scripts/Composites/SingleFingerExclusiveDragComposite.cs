@@ -8,7 +8,7 @@ namespace TouchInput.Source.Actions.Scripts.Composites
 #if UNITY_EDITOR
     [UnityEditor.InitializeOnLoad]
 #endif
-    public class SingleFingerExclusiveDragComposite : OneFingerComposite<TouchFeedback>
+    public class SingleFingerExclusiveDragComposite : OneFingerComposite<TouchResult>
     {
         [InputControl(layout = "Integer")]
         public int InputId;
@@ -19,9 +19,9 @@ namespace TouchInput.Source.Actions.Scripts.Composites
         protected override bool IsTouchActive(InputBindingCompositeContext ctx) =>
             ctx.ReadValueAsButton(PrimaryTouch) && !ctx.ReadValueAsButton(SecondaryTouch);
 
-        public override TouchFeedback ReadValue(ref InputBindingCompositeContext context)
+        public override TouchResult ReadValue(ref InputBindingCompositeContext context)
         {
-            return new TouchFeedback
+            return new TouchResult
             {
                 InputId = context.ReadValue<int>(InputId),
                 IsContactValid = IsTouchActive(context),

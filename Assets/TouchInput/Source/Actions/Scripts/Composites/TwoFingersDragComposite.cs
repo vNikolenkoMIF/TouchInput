@@ -8,14 +8,14 @@ namespace TouchInput.Source.Actions.Scripts.Composites
     #if UNITY_EDITOR
     [UnityEditor.InitializeOnLoad]
     #endif
-    public class TwoFingersDragComposite : TwoFingersComposite<TwoTouchesFeedback>
+    public class TwoFingersDragComposite : TwoFingersComposite<TwoTouchesResult>
     {
         [InputControl(layout = "Integer")]
         public int InputId;
         
-        public override TwoTouchesFeedback ReadValue(ref InputBindingCompositeContext context)
+        public override TwoTouchesResult ReadValue(ref InputBindingCompositeContext context)
         {
-            return new TwoTouchesFeedback
+            return new TwoTouchesResult
             {
                 InputId = context.ReadValue<int>(InputId),
                 IsContactValid = IsTouchActive(context),

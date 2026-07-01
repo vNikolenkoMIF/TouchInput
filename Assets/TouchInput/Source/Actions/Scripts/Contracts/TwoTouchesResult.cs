@@ -2,7 +2,7 @@
 
 namespace TouchInput.Source.Actions.Scripts.Contracts
 {
-    public struct TwoTouchesFeedback
+    public struct TwoTouchesResult
     {
         public int InputId;
         

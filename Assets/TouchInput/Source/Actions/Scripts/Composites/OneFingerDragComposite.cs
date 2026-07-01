@@ -7,14 +7,14 @@ namespace TouchInput.Source.Actions.Scripts.Composites
     #if UNITY_EDITOR
     [UnityEditor.InitializeOnLoad]
     #endif
-    public class OneFingerDragComposite : OneFingerComposite<Contracts.TouchFeedback>
+    public class OneFingerDragComposite : OneFingerComposite<Contracts.TouchResult>
     {
         [InputControl(layout = "Integer")]
         public int InputId;
         
-        public override Contracts.TouchFeedback ReadValue(ref InputBindingCompositeContext context)
+        public override Contracts.TouchResult ReadValue(ref InputBindingCompositeContext context)
         {
-            return new Contracts.TouchFeedback
+            return new Contracts.TouchResult
             {
                 InputId = context.ReadValue<int>(InputId),
                 IsContactValid = IsTouchActive(context),
