@@ -4,12 +4,10 @@ namespace TouchInput.Source.Gestures.Scripts.Modifiers
 {
     /// <summary>
     /// Mouse simulation for the editor. Right mouse button acts as a second touch that starts
-    /// with the pivot (midpoint) halfway between the two simulated touches. As the cursor moves, the secondary touch mirrors
-    /// around that fixed pivot: moving left spreads the fingers (zoom in), right pinches (zoom out),
-    /// arcing rotates. The non-zero initial spread ensures prevMagnitude is never zero, preventing
-    /// the huge scale jump that occurs when both touches start at the same pixel.
+    /// with the pivot (midpoint) with small offset from the mouse position.
+    /// Recommends to use for Input Actions emulation.
     /// </summary>
-    public class SimulateDragByMouse : IDragPositionModifier
+    public class SimulateSecondTouchAsPivotOffset : IDragPositionModifier
     {
         private int _primaryId = int.MinValue;
         private int _secondaryId = int.MinValue;

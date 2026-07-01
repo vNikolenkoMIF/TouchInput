@@ -47,7 +47,7 @@ namespace TouchInput.Source.Gestures.Scripts
 
             _multiTouchModifier = SystemInfo.deviceType == DeviceType.Handheld 
                 ? new DragScreenPosition() 
-                : new SimulateDragByMouse();
+                : new SimulateSecondTouchAsPivotOffset();
         }
 
         private void OnEnable()

@@ -9,7 +9,7 @@ namespace TouchInput.Source.Gestures.Scripts
     /// <see cref="IDragHandler"/>, and <see cref="IEndDragHandler"/> and forwards pointer
     /// positions to <see cref="MultiTouchTransformGestureBase"/>.
     ///
-    /// In the Editor, right-click simulates a second touch via <see cref="SimulateDragByMouse"/>.
+    /// In the Editor, right-click simulates a second touch via <see cref="SimulateSecondTouchAsOppositePosition"/>.
     ///
     /// Requires a Graphic (e.g. transparent Image with raycastTarget=true) on the same
     /// GameObject so the EventSystem can dispatch pointer events here.
@@ -25,7 +25,7 @@ namespace TouchInput.Source.Gestures.Scripts
 
             _modifier = SystemInfo.deviceType == DeviceType.Handheld 
                 ? new DragScreenPosition() 
-                : new SimulateDragByMouse();
+                : new SimulateSecondTouchAsOppositePosition();
         }
 
         public void OnBeginDrag(PointerEventData eventData)

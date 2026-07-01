@@ -14,8 +14,6 @@ using UnityEngine.Serialization;
 
 namespace TouchInput.Source.Gestures.Scripts
 {
-
-    
     /// <summary>
     /// Contains all gesture-recognition logic for single- and two-finger transform gestures
     /// (translation, rotation, scaling). Subclasses feed pointer events via
@@ -365,16 +363,22 @@ namespace TouchInput.Source.Gestures.Scripts
 
             if (rotationEnabled)
             {
-                if (_isRotating)
-                {
-                    _deltaRotation = Vector2.SignedAngle(prevVec, currVec);
+                var frameDeltaAngle = Vector2.SignedAngle(prevVec, currVec);
+                
+                //Prevent axes flip when touches emulating by mouse 
+                if (Mathf.Abs(frameDeltaAngle) > 90f) {
+                    frameDeltaAngle = 0f;
+                }
+                
+                if (_isRotating) {
+                    _deltaRotation = frameDeltaAngle;
                     RotationPhaseChanged?.Invoke(InputActionPhase.Performed);
                 }
                 else
                 {
                     PointToLineDistance2(prev0, prev1, curr0, curr1, out var d1, out var d2);
                     _rotationPixelBuffer += d1 - d2;
-                    _rotationBuffer += Vector2.SignedAngle(prevVec, currVec);
+                    _rotationBuffer += frameDeltaAngle;
 
                     if (_rotationPixelBuffer * _rotationPixelBuffer >= _screenThresholdPixelsSquared)
                     {
