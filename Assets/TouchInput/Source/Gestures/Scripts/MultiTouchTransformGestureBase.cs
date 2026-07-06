@@ -19,7 +19,7 @@ namespace TouchInput.Source.Gestures.Scripts
     /// (translation, rotation, scaling). Subclasses feed pointer events via
     /// <see cref="BeginPointer"/>, <see cref="MovePointer"/>, and <see cref="EndPointer"/>.
     /// </summary>
-    public abstract class MultiTouchTransformGestureBase : MonoBehaviour
+        public abstract class MultiTouchTransformGestureBase : MonoBehaviour
     {
         [SerializeField]
         [Tooltip("Minimum movement in cm before a gesture is recognized.")]
@@ -42,13 +42,23 @@ namespace TouchInput.Source.Gestures.Scripts
         [Tooltip("Locked transforms are suppressed regardless of input source.")]
         private TransformType _lockedTransforms = TransformType.Nothing;
 
+        [Header("Debug")]
+        [SerializeField]
+        private Vector2 _touchesDeltaPosition;
+        
+        [SerializeField]
+        private float _deltaRotation;
+        
+        [SerializeField]
+        private float _deltaScale;
+
         /// <summary>Delta dragging distance for active touch(es) in screen coordinates.</summary>
         public Vector2 DeltaPosition => _touchesDeltaPosition;
 
         /// <summary>Rotation delta in degrees. Positive = counter-clockwise.</summary>
         public float DeltaRotation => _deltaRotation;
 
-        /// <summary>Scale ratio: &gt;1 zoom in, &lt;1 zoom out, 1 = no change.</summary>
+        /// <summary>Fractional change in finger distance. Negative = fingers moved apart (zoom in), positive = fingers moved together (zoom out), 0 = no change.</summary>
         public float DeltaScale => _deltaScale;
 
         public TransformType SingleTouchBindings => _singleTouchBindings;
@@ -67,9 +77,6 @@ namespace TouchInput.Source.Gestures.Scripts
         private float _screenThresholdPixelsSquared;
         private float _minFingerDistancePixelsSquared;
 
-        private Vector2 _touchesDeltaPosition;
-        private float _deltaRotation;
-        private float _deltaScale = 1f;
 
         private bool _isTransforming;
         private bool _isScaling;
@@ -82,7 +89,7 @@ namespace TouchInput.Source.Gestures.Scripts
         private float _rotationBuffer;
 
         private float _scalePixelBuffer;
-        private float _scaleBuffer = 1f;
+        private float _scaleBuffer;
 
         private readonly Dictionary<int, Vector2> _currentPositions = new();
         private readonly Dictionary<int, Vector2> _previousPositions = new();
@@ -198,13 +205,15 @@ namespace TouchInput.Source.Gestures.Scripts
             else if (_currentPositions.Count == 0)
             {
                 _isTransforming = false;
-                _isScaling = false;
                 _isRotating = false;
-                
-                if (countBefore == 1)
+                _isScaling = false;
+
+                if (countBefore == 1) {
                     CancelSingleTouchEvents();
-                else
+                }
+                else {
                     CancelMultiTouchEvents();
+                }
             }
         }
 
@@ -245,17 +254,18 @@ namespace TouchInput.Source.Gestures.Scripts
         {
             if (!IsSingleTouchActive(TransformType.Rotation)) return;
 
-            if (!_isRotating)
-            {
+            if (!_isRotating) {
                 _rotationPixelBuffer += Mathf.Abs(delta.x);
                 _rotationBuffer += delta.x;
-                if (!(_rotationPixelBuffer * _rotationPixelBuffer >= _screenThresholdPixelsSquared)) return;
+
+                if (!(_rotationPixelBuffer * _rotationPixelBuffer >= _screenThresholdPixelsSquared)) {
+                    return;
+                }
 
                 _isRotating = true;
                 _deltaRotation = _rotationBuffer;
             }
-            else
-            {
+            else {
                 _deltaRotation = delta.x;
             }
 
@@ -264,13 +274,18 @@ namespace TouchInput.Source.Gestures.Scripts
 
         private void DoSingleTouchScaling(Vector2 delta)
         {
-            if (!IsSingleTouchActive(TransformType.Scaling)) return;
+            if (!IsSingleTouchActive(TransformType.Scaling)) {
+                return;
+            }
 
             if (!_isScaling)
             {
                 _scalePixelBuffer += Mathf.Abs(delta.y);
                 _scaleBuffer *= delta.magnitude;
-                if (!(_scalePixelBuffer * _scalePixelBuffer >= _screenThresholdPixelsSquared)) return;
+
+                if (!(_scalePixelBuffer * _scalePixelBuffer >= _screenThresholdPixelsSquared)) {
+                    return;
+                }
 
                 _isScaling = true;
                 _deltaScale = _scaleBuffer;
@@ -315,18 +330,14 @@ namespace TouchInput.Source.Gestures.Scripts
         private void DoMultiTouchTranslation(Vector2 curr1, Vector2 prev0, Vector2 prev1,
             float deltaRotation, float deltaScale)
         {
-            if (!IsMultiTouchActive(TransformType.Translation))
-            {
+            if (!IsMultiTouchActive(TransformType.Translation)) {
                 return;
             }
 
             if (_isTransforming)
             {
-                var transformedPoint = ScaleAndRotate(prev0, (prev0 + prev1) * .5f, 
-                    deltaRotation, deltaScale);
-                
+                var transformedPoint = ScaleAndRotate(prev0, (prev0 + prev1) * .5f, deltaRotation, deltaScale);
                 _touchesDeltaPosition = transformedPoint;
-                
                 TranslationPhaseChanged?.Invoke(InputActionPhase.Performed);
             }
 
@@ -336,10 +347,7 @@ namespace TouchInput.Source.Gestures.Scripts
             {
                 _isTransforming = true;
                 prev0 = curr1 - _translationBuffer;
-                
-                var transformedPoint = ScaleAndRotate(prev0, (prev0 + prev1) * .5f, 
-                    deltaRotation, deltaScale);
-                
+                var transformedPoint = ScaleAndRotate(prev0, (prev0 + prev1) * .5f, deltaRotation, deltaScale);
                 _touchesDeltaPosition = new Vector3(curr1.x - transformedPoint.x, curr1.y - transformedPoint.y, 0);
                 TranslationPhaseChanged?.Invoke(InputActionPhase.Performed);
             }
@@ -354,9 +362,8 @@ namespace TouchInput.Source.Gestures.Scripts
             var currMagnitude = currVec.magnitude;
 
             if (currVec.sqrMagnitude < _minFingerDistancePixelsSquared || prevMagnitude < 0.01f) {
-                return;  
+                return;
             }
-
 
             var rotationEnabled = IsMultiTouchActive(TransformType.Rotation);
             var scalingEnabled = IsMultiTouchActive(TransformType.Scaling);
@@ -374,14 +381,22 @@ namespace TouchInput.Source.Gestures.Scripts
                     _deltaRotation = frameDeltaAngle;
                     RotationPhaseChanged?.Invoke(InputActionPhase.Performed);
                 }
-                else
-                {
-                    PointToLineDistance2(prev0, prev1, curr0, curr1, out var d1, out var d2);
-                    _rotationPixelBuffer += d1 - d2;
+                else {
+
+                    // Perpendicular displacement of each finger relative to the previous baseline
+                    // (the line through prev0/prev1) isolates the rotational component of the
+                    // motion from the scaling component (which moves fingers along that line),
+                    // in the same raw pixel units as the scaling threshold below. This keeps
+                    // rotation equally responsive regardless of how far apart the fingers are —
+                    // unlike an arc-length (radius * angle) measure, which under-detects rotation
+                    // when fingers are close together.
+                    PointToLineDistances(prev0, prev1, curr0, curr1, out var d0, out var d1);
+
+                    _rotationPixelBuffer += d1 - d0;
                     _rotationBuffer += frameDeltaAngle;
 
-                    if (_rotationPixelBuffer * _rotationPixelBuffer >= _screenThresholdPixelsSquared)
-                    {
+                    if (_rotationPixelBuffer * _rotationPixelBuffer >= _screenThresholdPixelsSquared) {
+
                         _isRotating = true;
                         _deltaRotation = _rotationBuffer;
                         RotationPhaseChanged?.Invoke(InputActionPhase.Performed);
@@ -391,20 +406,26 @@ namespace TouchInput.Source.Gestures.Scripts
 
             if (scalingEnabled)
             {
-                if (_isScaling)
-                {
-                    _deltaScale = prevMagnitude - currMagnitude;
+                // Fractional change in finger distance — small and zero-centered, like
+                // DeltaRotation (degrees/frame) and DeltaPosition (pixels/frame), both of which
+                // are added directly to the target by consumers. The previous raw pixel
+                // difference was unnormalized (tens/hundreds of units), which is why scaling
+                // alone needed an outlier sensitivity (~0.001) to avoid blowing up the scale.
+                var frameDeltaScale = (prevMagnitude - currMagnitude) / prevMagnitude;
+
+                if (_isScaling) {
+                    _deltaScale = frameDeltaScale;
                     ScalePhaseChanged?.Invoke(InputActionPhase.Performed);
                 }
                 else
                 {
-                    var newDistance = currVec.magnitude;
-                    var oldDistance = (prev1 - prev0).magnitude;
-                    _scalePixelBuffer += newDistance - oldDistance;
-                    _scaleBuffer += prevMagnitude - currMagnitude;
+                    var scaleInPixels = currMagnitude - prevMagnitude;
+                    
+                    _scalePixelBuffer += scaleInPixels;
+                    _scaleBuffer += frameDeltaScale;
 
-                    if (_scalePixelBuffer * _scalePixelBuffer >= _screenThresholdPixelsSquared)
-                    {
+                    if (_scalePixelBuffer * _scalePixelBuffer >= _screenThresholdPixelsSquared) {
+                        
                         _isScaling = true;
                         _deltaScale = _scaleBuffer;
                         ScalePhaseChanged?.Invoke(InputActionPhase.Performed);
@@ -422,15 +443,17 @@ namespace TouchInput.Source.Gestures.Scripts
         private void ResetValues()
         {
             _isTransforming = false;
-            _isRotating = false;
-            _isScaling = false;
             _translationBuffer = Vector2.zero;
+            
+            _isRotating = false;
             _rotationPixelBuffer = 0f;
             _rotationBuffer = 0f;
             _deltaRotation = 0f;
+            
+            _isScaling = false;
             _scalePixelBuffer = 0f;
-            _scaleBuffer = 1f;
-            _deltaScale = 1f;
+            _scaleBuffer = 0f;
+            _deltaScale = 0f;
         }
 
         private void StartSingleTouchEvents()
@@ -438,10 +461,10 @@ namespace TouchInput.Source.Gestures.Scripts
             if (IsSingleTouchActive(TransformType.Translation)) 
                 TranslationPhaseChanged?.Invoke(InputActionPhase.Started);
             
-            if (IsSingleTouchActive(TransformType.Rotation))    
+            if (IsSingleTouchActive(TransformType.Rotation))  
                 RotationPhaseChanged?.Invoke(InputActionPhase.Started);
             
-            if (IsSingleTouchActive(TransformType.Scaling))     
+            if (IsSingleTouchActive(TransformType.Scaling))  
                 ScalePhaseChanged?.Invoke(InputActionPhase.Started);
         }
 
@@ -459,42 +482,36 @@ namespace TouchInput.Source.Gestures.Scripts
 
         private void CancelSingleTouchEvents()
         {
-            if (IsSingleTouchActive(TransformType.Translation))
-            {
+            if (IsSingleTouchActive(TransformType.Translation)){ 
                 _touchesDeltaPosition = Vector2.zero; 
-                TranslationPhaseChanged?.Invoke(InputActionPhase.Canceled);
+                TranslationPhaseChanged?.Invoke(InputActionPhase.Canceled); 
             }
-            
-            if (IsSingleTouchActive(TransformType.Rotation))    
-            { 
+
+            if (IsSingleTouchActive(TransformType.Rotation)) {
                 _deltaRotation = 0f;                  
-                RotationPhaseChanged?.Invoke(InputActionPhase.Canceled); 
+                RotationPhaseChanged?.Invoke(InputActionPhase.Canceled);
             }
-            
-            if (IsSingleTouchActive(TransformType.Scaling))     
-            { 
-                _deltaScale = 1f;                     
-                ScalePhaseChanged?.Invoke(InputActionPhase.Canceled); 
+
+            if (IsSingleTouchActive(TransformType.Scaling)) {
+                _deltaScale = 0f;
+                ScalePhaseChanged?.Invoke(InputActionPhase.Canceled);
             }
         }
 
         private void CancelMultiTouchEvents()
         {
-            if (IsMultiTouchActive(TransformType.Translation))
-            {
+            if (IsMultiTouchActive(TransformType.Translation)) {
                 _touchesDeltaPosition = Vector2.zero; 
                 TranslationPhaseChanged?.Invoke(InputActionPhase.Canceled);
             }
-
-            if (IsMultiTouchActive(TransformType.Rotation))
-            {
+            
+            if (IsMultiTouchActive(TransformType.Rotation)) { 
                 _deltaRotation = 0f;                  
-                RotationPhaseChanged?.Invoke(InputActionPhase.Canceled);
+                RotationPhaseChanged?.Invoke(InputActionPhase.Canceled); 
             }
 
-            if (IsMultiTouchActive(TransformType.Scaling))
-            {
-                _deltaScale = 1f;                     
+            if (IsMultiTouchActive(TransformType.Scaling)) {
+                _deltaScale = 0f;
                 ScalePhaseChanged?.Invoke(InputActionPhase.Canceled);
             }
         }
@@ -546,15 +563,13 @@ namespace TouchInput.Source.Gestures.Scripts
             return new Vector2(point.x * cos - point.y * sin, point.x * sin + point.y * cos);
         }
 
-        private static void PointToLineDistance2(Vector2 lineStart, Vector2 lineEnd, Vector2 point1, Vector2 point2,
-            out float dist1, out float dist2)
+        /// <summary>Signed perpendicular distance of <paramref name="point0"/>/<paramref name="point1"/> from the infinite line through <paramref name="lineStart"/>/<paramref name="lineEnd"/>.</summary>
+        private static void PointToLineDistances(Vector2 lineStart, Vector2 lineEnd, Vector2 point0, Vector2 point1, out float d0, out float d1)
         {
-            var dx = lineEnd.x - lineStart.x;
-            var dy = lineEnd.y - lineStart.y;
-            var c  = lineEnd.x * lineStart.y - lineEnd.y * lineStart.x;
-            var length = Mathf.Sqrt(dx * dx + dy * dy);
-            dist1 = (dy * point1.x - dx * point1.y + c) / length;
-            dist2 = (dy * point2.x - dx * point2.y + c) / length;
+            var lineDir = (lineEnd - lineStart).normalized;
+            var normal = new Vector2(-lineDir.y, lineDir.x);
+            d0 = Vector2.Dot(point0 - lineStart, normal);
+            d1 = Vector2.Dot(point1 - lineStart, normal);
         }
 
         #endregion Math helpers
