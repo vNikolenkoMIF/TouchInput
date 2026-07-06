@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace Assets._vGISComponents.Components.InputModule.Gestures.Scripts.Dispatchers
+namespace TouchInput.Source.Gestures.Scripts.Dispatchers
 {
     /// <summary>
     /// Re-dispatches drag events to another GameObject's handlers.
