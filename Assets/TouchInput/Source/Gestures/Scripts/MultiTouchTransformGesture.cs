@@ -105,7 +105,7 @@ namespace TouchInput.Source.Gestures.Scripts
 
         private void OnSingleCanceled(InputAction.CallbackContext ctx)
         {
-            if (_multiTouchAction.ReadValue<TwoTouchesResult>().IsContactValid) {
+            if (_singleTouchAction.IsPressed()) {
                 return;
             }
 

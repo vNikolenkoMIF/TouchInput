@@ -25,7 +25,11 @@ namespace TouchInput.Source.Actions.Scripts.Composites
         }
 
         public override float EvaluateMagnitude(ref InputBindingCompositeContext context)
-            => ReadValue(ref context).IsContactValid ? 1f : 0f;
+        {
+            var isTouchActive = IsTouchActive(context);
+            return isTouchActive ? 1f : 0f;
+
+        }
 
 #if UNITY_EDITOR
         static TwoFingersDragComposite()

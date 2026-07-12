@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using TouchInput.Source.Gestures.Scripts.Contracts;
 using TouchInput.Source.Managers.Scripts;
 using TouchInput.Source.Utilities.Scripts;
+using TouchInput.Source.Utilities.Scripts.Extensions;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
