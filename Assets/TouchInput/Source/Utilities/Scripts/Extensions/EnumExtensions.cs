@@ -1,6 +1,6 @@
 using System;
 
-namespace TouchInput.Source.Utilities.Scripts
+namespace TouchInput.Source.Utilities.Scripts.Extensions
 {
     public static class EnumExtensions
     {

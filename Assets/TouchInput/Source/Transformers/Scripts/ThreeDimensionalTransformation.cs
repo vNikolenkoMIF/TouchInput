@@ -1,6 +1,7 @@
 ﻿using TouchInput.Source.Gestures.Scripts;
 using TouchInput.Source.Transformers.Scripts.Contracts;
 using TouchInput.Source.Utilities.Scripts;
+using TouchInput.Source.Utilities.Scripts.Extensions;
 using UnityEngine;
 using UnityEngine.InputSystem;
 

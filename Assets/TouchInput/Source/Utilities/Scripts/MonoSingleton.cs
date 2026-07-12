@@ -1,3 +1,4 @@
+using TouchInput.Source.Utilities.Scripts.Extensions;
 using UnityEngine;
 
 namespace TouchInput.Source.Utilities.Scripts
